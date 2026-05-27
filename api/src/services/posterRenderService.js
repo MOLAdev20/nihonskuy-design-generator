@@ -73,16 +73,33 @@ function buildManualContentSectionSvg(dataLoker) {
   return contentSvg;
 }
 
-function buildPdfSyaratSvg(dataLoker) {
-  let syaratSvgElements = '';
-  let startY = 700;
+function buildPdfPointSectionSvg(dataLoker) {
+  let sectionSvg = '';
+  let startY = 690;
+  const lineSpacing = 44;
 
-  dataLoker.syarat.forEach((item) => {
-    syaratSvgElements += `<text x="130" y="${startY}" font-family="'Montserrat', sans-serif" font-size="28" font-weight="700" fill="#1E1A4B">• ${item}</text>\n`;
-    startY += 55;
-  });
+  if (dataLoker.syarat.length > 0) {
+    sectionSvg += `<text x="130" y="${startY}" font-family="'Montserrat', sans-serif" font-size="27" font-weight="800" fill="#1E1A4B">PERSYARATAN:</text>\n`;
+    startY += lineSpacing;
 
-  return syaratSvgElements;
+    dataLoker.syarat.forEach((item) => {
+      sectionSvg += `<text x="150" y="${startY}" font-family="'Montserrat', sans-serif" font-size="26" font-weight="700" fill="#1E1A4B">• ${item}</text>\n`;
+      startY += lineSpacing;
+    });
+  }
+
+  if (dataLoker.benefit.length > 0) {
+    startY += 12;
+    sectionSvg += `<text x="130" y="${startY}" font-family="'Montserrat', sans-serif" font-size="27" font-weight="800" fill="#1E1A4B">BENEFIT:</text>\n`;
+    startY += lineSpacing;
+
+    dataLoker.benefit.forEach((item) => {
+      sectionSvg += `<text x="150" y="${startY}" font-family="'Montserrat', sans-serif" font-size="26" font-weight="700" fill="#1E1A4B">+ ${item}</text>\n`;
+      startY += lineSpacing;
+    });
+  }
+
+  return sectionSvg;
 }
 
 function buildManualPosterOverlay(width, height, dataLoker) {
@@ -104,14 +121,14 @@ function buildManualPosterOverlay(width, height, dataLoker) {
 }
 
 function buildPdfPosterOverlay(width, height, dataLoker) {
-  const syaratSvg = buildPdfSyaratSvg(dataLoker);
+  const pointsSvg = buildPdfPointSectionSvg(dataLoker);
 
   return `
     <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
       <text x="80" y="455" font-family="'Montserrat', sans-serif" font-size="26" font-weight="700" fill="#4B4A6B" letter-spacing="1">${dataLoker.lokasi}</text>
       <text x="80" y="505" font-family="'Montserrat', sans-serif" font-size="36" font-weight="900" fill="#E11D48">${dataLoker.gaji}</text>
       <text x="180" y="562" font-family="'Montserrat', sans-serif" font-size="26" font-weight="700" fill="#FFFFFF">${dataLoker.posisi}</text>
-      ${syaratSvg}
+      ${pointsSvg}
     </svg>
   `;
 }

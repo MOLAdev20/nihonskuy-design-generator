@@ -9,15 +9,17 @@ Aturan Analisis Dokumen:
 1. posisi: Cari di bagian "業職" atau pekerjaan utama. Jika tertulis "介護", terjemahkan secara profesional menjadi "Keperawatan (Kaigo)". Maksimal 30 karakter.
 2. lokasi: Cari di bagian "就業場所". Ambil nama Prefektur dan Kotanya saja, tulis dengan HURUF KAPITAL (contoh: "SAITAMA - MISATO").
 3. gaji: Cari di bagian "給与". Ambil kisaran "月給" terendah dan tertinggi yang ada. Format harus "¥272,200 - ¥302,200".
-4. syarat: Cari di bagian "備考" atau kriteria umum. Ekstrak maksimal 4 poin persyaratan paling penting. Maksimal 40 karakter per poin.
-5. Jika data tidak ditemukan, isi string kosong "" atau array kosong [] sesuai tipe field. Jangan mengarang.
+4. syarat: Cari di bagian "応募条件", "必要な経験", "必要な資格", "備考", atau kriteria umum. Ekstrak maksimal 4 poin persyaratan paling penting. Maksimal 40 karakter per poin.
+5. benefit: Cari di bagian "待遇", "福利厚生", "手当", "備考", atau kompensasi tambahan. Ekstrak maksimal 5 poin benefit paling penting. Maksimal 40 karakter per poin.
+6. Jika data tidak ditemukan, isi string kosong "" atau array kosong [] sesuai tipe field. Jangan mengarang.
 
 Output WAJIB JSON valid dengan bentuk:
 {
   "posisi": "Nama Jabatan",
   "lokasi": "PREFEKTUR - KOTA",
   "gaji": "¥Angka - ¥Angka",
-  "syarat": ["Poin 1", "Poin 2"]
+  "syarat": ["Poin 1", "Poin 2"],
+  "benefit": ["Poin 1", "Poin 2"]
 }
 
 Jangan gunakan markdown, jangan gunakan code block, jangan tambahkan penjelasan apa pun. Balas JSON saja.
@@ -59,6 +61,9 @@ async function extractLokerDataFromPdfText(pdfText) {
 
   if (!Array.isArray(parsed.syarat)) {
     throw createHttpError(502, 'Format respons Gemini invalid: "syarat" harus array.');
+  }
+  if (!Array.isArray(parsed.benefit)) {
+    throw createHttpError(502, 'Format respons Gemini invalid: "benefit" harus array.');
   }
 
   return parsed;

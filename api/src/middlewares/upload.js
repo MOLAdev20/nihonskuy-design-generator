@@ -5,6 +5,13 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024,
   },
+  fileFilter(req, file, callback) {
+    if (file.mimetype !== 'application/pdf') {
+      callback(new Error('File harus berformat PDF.'));
+      return;
+    }
+    callback(null, true);
+  },
 });
 
 module.exports = {
