@@ -1,0 +1,14 @@
+{
+  "name": "ai-loker-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start": "concurrently -n API,CLIENT -c cyan,magenta \"npm --prefix api run start\" \"npm --prefix client run dev\"",
+    "start:api": "npm --prefix api run start",
+    "start:client": "npm --prefix client run dev",
+    "build:client": "npm --prefix client run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
