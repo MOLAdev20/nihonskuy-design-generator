@@ -1,22 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
-const API_ENDPOINT = 'http://localhost:8080/api/generate-poster'
-const DEFAULT_SYARAT = ['']
-const DEFAULT_BENEFIT = ['']
+const API_ENDPOINT_MANUAL = 'http://localhost:8080/api/generate-poster'
+const API_ENDPOINT_PDF_SUGGESTION = 'http://localhost:8080/api/suggest-from-pdf'
 
 function App() {
   const [lokasi, setLokasi] = useState('')
   const [gaji, setGaji] = useState('')
   const [posisi, setPosisi] = useState('')
-  const [syarat, setSyarat] = useState(DEFAULT_SYARAT)
-  const [benefit, setBenefit] = useState(DEFAULT_BENEFIT)
+  const [syarat, setSyarat] = useState([''])
+  const [benefit, setBenefit] = useState([''])
+  const [pdfFile, setPdfFile] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isAnalyzingPdf, setIsAnalyzingPdf] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
-
-  const isFormInvalid = useMemo(() => {
-    return !lokasi.trim() || !gaji.trim() || !posisi.trim()
-  }, [lokasi, gaji, posisi])
 
   const updateArrayItem = (setter, source, index, value) => {
     const next = [...source]
@@ -37,6 +34,13 @@ function App() {
     return items.map((item) => item.trim()).filter(Boolean)
   }
 
+  const normalizeArrayForForm = (items) => {
+    const cleaned = Array.isArray(items)
+      ? items.map((item) => String(item || '').trim()).filter(Boolean)
+      : []
+    return cleaned.length > 0 ? cleaned : ['']
+  }
+
   const triggerDownload = (blob, filename) => {
     const objectUrl = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
@@ -48,12 +52,53 @@ function App() {
     URL.revokeObjectURL(objectUrl)
   }
 
+  const handleAnalyzePdf = async () => {
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    if (!pdfFile) {
+      setErrorMessage('Upload file PDF Kyujin dulu.')
+      return
+    }
+
+    try {
+      setIsAnalyzingPdf(true)
+      const formData = new FormData()
+      formData.append('filePdf', pdfFile)
+
+      const response = await fetch(API_ENDPOINT_PDF_SUGGESTION, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Gagal menganalisa PDF Kyujin.')
+      }
+
+      const result = await response.json()
+      if (!result?.success || !result?.data) {
+        throw new Error('Respons AI tidak valid.')
+      }
+
+      setLokasi(String(result.data.lokasi || ''))
+      setGaji(String(result.data.gaji || ''))
+      setPosisi(String(result.data.posisi || ''))
+      setSyarat(normalizeArrayForForm(result.data.syarat))
+      setBenefit(normalizeArrayForForm(result.data.benefit))
+      setSuccessMessage('Saran dari AI sudah diisikan ke form. Silakan review dan edit jika perlu.')
+    } catch (error) {
+      setErrorMessage(error.message || 'Gagal menganalisa PDF Kyujin.')
+    } finally {
+      setIsAnalyzingPdf(false)
+    }
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setErrorMessage('')
     setSuccessMessage('')
 
-    if (isFormInvalid) {
+    if (!lokasi.trim() || !gaji.trim() || !posisi.trim()) {
       setErrorMessage('Lengkapi lokasi, range gaji, dan posisi pekerjaan.')
       return
     }
@@ -68,7 +113,7 @@ function App() {
 
     try {
       setIsSubmitting(true)
-      const response = await fetch(API_ENDPOINT, {
+      const response = await fetch(API_ENDPOINT_MANUAL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,8 +132,8 @@ function App() {
 
       triggerDownload(imageBlob, 'poster-loker-nihonskuy.jpg')
       setSuccessMessage('Poster berhasil dibuat dan download sudah dipicu.')
-    } catch {
-      setErrorMessage('Gagal membuat poster. Coba lagi beberapa saat.')
+    } catch (error) {
+      setErrorMessage(error.message || 'Gagal membuat poster. Coba lagi beberapa saat.')
     } finally {
       setIsSubmitting(false)
     }
@@ -108,6 +153,32 @@ function App() {
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <section className="rounded-lg border border-cyan-300/35 bg-slate-900/50 p-5 shadow-[0_18px_60px_rgba(6,182,212,0.12)] sm:p-7">
           <form className="space-y-8" onSubmit={handleSubmit}>
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.08em] text-cyan-200">Upload PDF Kyujin (AI Suggestion)</h2>
+              <div className="flex flex-col gap-3 md:flex-row md:items-end">
+                <label className="block flex-1 space-y-2">
+                  <span className="text-sm font-medium text-slate-300">File PDF</span>
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={(event) => setPdfFile(event.target.files?.[0] || null)}
+                    className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 file:mr-4 file:rounded-md file:border-0 file:bg-cyan-500/25 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-cyan-100 hover:file:bg-cyan-500/35"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAnalyzePdf}
+                  disabled={isAnalyzingPdf}
+                  className="rounded-md border border-cyan-300/60 bg-cyan-500/15 px-4 py-2.5 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isAnalyzingPdf ? 'Menganalisa PDF...' : 'Analisa PDF & Isi Otomatis'}
+                </button>
+              </div>
+              <p className="text-xs text-slate-400">
+                AI hanya mengisi draft awal. Pastikan user review dan edit detail sebelum generate poster.
+              </p>
+            </section>
+
             <div className="grid gap-5 md:grid-cols-2">
               <label className="space-y-2 md:col-span-2">
                 <span className="text-sm font-medium text-slate-300">Lokasi</span>
@@ -216,7 +287,7 @@ function App() {
             <div className="space-y-3">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isAnalyzingPdf}
                 className="w-full rounded-md border border-cyan-300/60 bg-cyan-500/15 px-4 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/25 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isSubmitting ? 'Memproses Poster...' : 'Generate & Download Poster'}
