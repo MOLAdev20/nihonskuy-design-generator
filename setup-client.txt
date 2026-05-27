@@ -1,0 +1,54 @@
+Buatkan PRD/Document Plan di PRD/setup-client.md
+
+<Tujuan/scope>
+
+Buat UI yang intuitive, modern, dan minimalis dengan react JS, vite dan Tailwind CSS yang sudah dipersiapkan. Dengan desain UI bergaya dark mode cyberpunk
+
+</Tujuan/scope>
+
+<Ketentuan>
+
+Struktu UI nya adalah sebegai berikut:
+- Topbar (sebelah kiri menampilkan "Nihonskuy" dengan logonya NS)
+- Konten dengan margin kiri kanan.
+
+Di dalam konten ada beberapa input type text:
+- Lokasi
+- Range Gaji
+- Posisi Pekerjaan
+
+Ada dynamic input, bisa ditambahkan atau dikurangi inputnya untuk tujuan membuat point-point:
+- Syarat
+- Benefit
+
+Jika user sudah mengisi, ada tombol submit yang mentrigger ke backend dengan ketentuan sebagai berikut:
+- [POST] http://localhost:8080/api/generate-poster
+- Request-example : {
+  "lokasi": "SAITAMA - MISATO",
+  "gaji": "¥272,200 - ¥302,200",
+  "posisi": "RESTORAN (HOTEL)",
+  "syarat": [
+    "Domisili Jepang",
+    "JLPT N4",
+    "Kaiwa N3"
+  ],
+  "benefit": [
+    "Kenaikan Gaji",
+    "Lembur",
+    "Asrama",
+    "Makan Bergizi Gratis",
+    "Tempat Ibadah",
+  ]
+}
+
+Response-Header : [{"key":"Date","value":"Wed, 27 May 2026 12:16:29 GMT"},{"key":"Content-Length","value":"506037"},{"key":"Keep-Alive","value":"timeout=5"},{"key":"Connection","value":"keep-alive"},{"key":"X-Powered-By","value":"Express"},{"key":"Content-Type","value":"image/png"},{"key":"ETag","value":"W/\"7b8b5-Fuxr/IZEVRoml06HO7m/nfNrJX8\""}]
+
+Kita tau kalo Responsenya nanti berupa gambar. Jadi nanti setelah tombol submit  ditrigger, maka sebuah file jpg akan terunduh
+
+</Ketentuan>
+
+
+*catatan:
+
+- Kerjakan Instruksi sesuai dengan scope yang dijelaskan pada dokumen ini. Jangan mengerjakan di luar scope Instruksi yang diberikan!.
+- Tempatkan diri anda sebagai technical architect / PM / senior fullstack developer. Instruksikan secara high level, jangan low level atau detail karena document planning ini akan diimplementasikan oleh junior fullstack programmer atau Program AI Model yang murah
