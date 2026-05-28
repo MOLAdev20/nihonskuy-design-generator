@@ -13,6 +13,7 @@ function normalizeSuggestionData(payload) {
     posisi: normalizeString(payload.posisi),
     syarat: normalizeArray(payload.syarat),
     benefit: normalizeArray(payload.benefit),
+    penjelasan: normalizeString(payload.penjelasan),
   };
 }
 

@@ -9,6 +9,7 @@ function App() {
   const [posisi, setPosisi] = useState('')
   const [syarat, setSyarat] = useState([''])
   const [benefit, setBenefit] = useState([''])
+  const [analysisExplanation, setAnalysisExplanation] = useState('')
   const [pdfFile, setPdfFile] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isAnalyzingPdf, setIsAnalyzingPdf] = useState(false)
@@ -85,6 +86,7 @@ function App() {
       setPosisi(String(result.data.posisi || ''))
       setSyarat(normalizeArrayForForm(result.data.syarat))
       setBenefit(normalizeArrayForForm(result.data.benefit))
+      setAnalysisExplanation(String(result.data.penjelasan || ''))
       setSuccessMessage('Saran dari AI sudah diisikan ke form. Silakan review dan edit jika perlu.')
     } catch (error) {
       setErrorMessage(error.message || 'Gagal menganalisa PDF Kyujin.')
@@ -150,9 +152,10 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        <section className="rounded-lg border border-cyan-300/35 bg-slate-900/50 p-5 shadow-[0_18px_60px_rgba(6,182,212,0.12)] sm:p-7">
-          <form className="space-y-8" onSubmit={handleSubmit}>
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+          <section className="rounded-lg border border-cyan-300/35 bg-slate-900/50 p-5 shadow-[0_18px_60px_rgba(6,182,212,0.12)] sm:p-7">
+            <form className="space-y-8" onSubmit={handleSubmit}>
             <section className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-[0.08em] text-cyan-200">Upload PDF Kyujin (AI Suggestion)</h2>
               <div className="flex flex-col gap-3 md:flex-row md:items-end">
@@ -304,8 +307,32 @@ function App() {
                 </p>
               ) : null}
             </div>
-          </form>
-        </section>
+            </form>
+          </section>
+
+          <aside className="rounded-lg border border-fuchsia-300/30 bg-slate-900/55 p-5 shadow-[0_18px_60px_rgba(217,70,239,0.1)] sm:p-6 xl:sticky xl:top-24 xl:self-start">
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-fuchsia-200">Penjelasan AI</p>
+                <h2 className="mt-2 text-lg font-semibold text-slate-100">Analisa Kyujin</h2>
+              </div>
+
+              {analysisExplanation ? (
+                <div className="max-h-[70vh] overflow-y-auto rounded-md border border-slate-800 bg-slate-950/70 p-4">
+                  <p className="whitespace-pre-line text-sm leading-7 text-slate-300">
+                    {analysisExplanation}
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-md border border-slate-800 bg-slate-950/70 p-4">
+                  <p className="text-sm leading-7 text-slate-500">
+                    Setelah PDF Kyujin dianalisa, panel ini akan menampilkan penjabaran lengkap dari AI agar user bisa memahami konteks lowongan sebelum mengedit form.
+                  </p>
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
       </main>
     </div>
   )
