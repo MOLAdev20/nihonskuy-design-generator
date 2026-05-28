@@ -14,6 +14,7 @@ function App() {
   const [isAnalyzingPdf, setIsAnalyzingPdf] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [dragState, setDragState] = useState(null)
 
   const updateArrayItem = (setter, source, index, value) => {
     const next = [...source]
@@ -28,6 +29,34 @@ function App() {
   const removeItem = (setter, source, index) => {
     if (source.length === 1) return
     setter(source.filter((_, itemIndex) => itemIndex !== index))
+  }
+
+  const reorderItems = (items, fromIndex, toIndex) => {
+    if (fromIndex === toIndex) return items
+
+    const next = [...items]
+    const [moved] = next.splice(fromIndex, 1)
+    next.splice(toIndex, 0, moved)
+    return next
+  }
+
+  const handleDragStart = (listType, index) => {
+    setDragState({ listType, index })
+  }
+
+  const handleDragOver = (event) => {
+    event.preventDefault()
+  }
+
+  const handleDrop = (setter, items, listType, dropIndex) => {
+    if (!dragState || dragState.listType !== listType) return
+
+    setter(reorderItems(items, dragState.index, dropIndex))
+    setDragState(null)
+  }
+
+  const handleDragEnd = () => {
+    setDragState(null)
   }
 
   const sanitizeDynamicValues = (items) => {
@@ -228,7 +257,22 @@ function App() {
                 </div>
                 <div className="space-y-2">
                   {syarat.map((item, index) => (
-                    <div key={`syarat-${index}`} className="flex gap-2">
+                    <div
+                      key={`syarat-${index}`}
+                      draggable
+                      onDragStart={() => handleDragStart('syarat', index)}
+                      onDragOver={handleDragOver}
+                      onDrop={() => handleDrop(setSyarat, syarat, 'syarat', index)}
+                      onDragEnd={handleDragEnd}
+                      className={`flex gap-2 rounded-md border border-transparent p-1 transition ${dragState?.listType === 'syarat' && dragState.index === index ? 'opacity-50' : ''} ${dragState?.listType === 'syarat' ? 'hover:border-cyan-400/30' : ''}`}
+                    >
+                      <button
+                        type="button"
+                        aria-label={`Geser urutan syarat ${index + 1}`}
+                        className="cursor-grab rounded-md border border-slate-700 bg-slate-900 px-2 py-2 text-slate-400 active:cursor-grabbing"
+                      >
+                        ::
+                      </button>
                       <input
                         type="text"
                         value={item}
@@ -262,7 +306,22 @@ function App() {
                 </div>
                 <div className="space-y-2">
                   {benefit.map((item, index) => (
-                    <div key={`benefit-${index}`} className="flex gap-2">
+                    <div
+                      key={`benefit-${index}`}
+                      draggable
+                      onDragStart={() => handleDragStart('benefit', index)}
+                      onDragOver={handleDragOver}
+                      onDrop={() => handleDrop(setBenefit, benefit, 'benefit', index)}
+                      onDragEnd={handleDragEnd}
+                      className={`flex gap-2 rounded-md border border-transparent p-1 transition ${dragState?.listType === 'benefit' && dragState.index === index ? 'opacity-50' : ''} ${dragState?.listType === 'benefit' ? 'hover:border-fuchsia-400/30' : ''}`}
+                    >
+                      <button
+                        type="button"
+                        aria-label={`Geser urutan benefit ${index + 1}`}
+                        className="cursor-grab rounded-md border border-slate-700 bg-slate-900 px-2 py-2 text-slate-400 active:cursor-grabbing"
+                      >
+                        ::
+                      </button>
                       <input
                         type="text"
                         value={item}
